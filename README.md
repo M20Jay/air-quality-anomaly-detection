@@ -8,9 +8,7 @@
 Production time series forecasting and anomaly detection system for air quality monitoring.
 Built by Martin James Ng'ang'a — MLOps Engineer | Nairobi, Kenya
 
-📁 [GitHub Repository](https://github.com/M20Jay/air-quality-anomaly-detection)
-
-> 🔗 Live API link added on deployment
+> 🔗 Live API — added on deployment
 
 ## What This System Does
 
