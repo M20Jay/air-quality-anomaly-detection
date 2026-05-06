@@ -1,0 +1,53 @@
+# ── Data Configuration ────────────────────────────────
+data:
+  raw_path: data/raw
+  process_path: data/processed
+  city: Nairobi
+  country: KE
+  parameter: pm25
+  date_from: "2023-01-01"
+  date_to: "2025-12-31"
+  resample_freq: H        # Hourly
+  train_size: 0.8         # 80% train, 20% test
+
+# ── ARIMA Configuration ───────────────────────────────
+arima:
+  p: 2                    # Autoregressive order
+  d: 1                    # Differencing order
+  q: 2                    # Moving average order
+  seasonal: false
+
+# ── Prophet Configuration ─────────────────────────────
+prophet:
+  seasonality_mode: multiplicative
+  yearly_seasonality: true
+  weekly_seasonality: true
+  daily_seasonality: true
+  forecast_horizon: 24    # Hours ahead to forecast
+
+# ── LSTM Configuration ────────────────────────────────
+lstm:
+  lookback_window: 24     # Hours to look back
+  forecast_horizon: 24    # Hours ahead to forecast
+  units: 64               # Neurons per layer
+  dropout: 0.2
+  epochs: 50
+  batch_size: 32
+  random_state: 42
+
+# ── Isolation Forest Configuration ────────────────────
+isolation_forest:
+  contamination: 0.05     # Expected anomaly rate 5%
+  n_estimators: 100
+  random_state: 42
+  threshold_severity:
+    low: 0.3
+    medium: 0.6
+    high: 0.8
+
+# ── API Configuration ─────────────────────────────────
+api:
+  host: "0.0.0.0"
+  port: 8000
+  title: "Air Quality Anomaly Detection API. Built by Martin James — MLOps Engineer."
+  version: "1.0.0"
