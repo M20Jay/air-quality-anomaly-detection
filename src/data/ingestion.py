@@ -18,7 +18,7 @@ def fetch_nairobi_locations() -> list:
     url = f"{BASE_URL}/locations"
     headers = {"X-API-Key": API_KEY}
     params = {
-        "country_id": "KE",
+        "bbox": "36.6,-1.5,37.1,-1.0",
         "limit": 100
     }
     logger.info("Fetching Nairobi sensor locations...")
@@ -30,23 +30,37 @@ def fetch_nairobi_locations() -> list:
     return locations
 
 def fetch_measurements(location_id: int, days: int = 90) -> pd.DataFrame:
-    """Fetch PM2.5 measurements for a specific location."""
-    url = f"{BASE_URL}/locations/{location_id}/measurements"
+    """Fetch measurements for a specific location."""
+    url = f"{BASE_URL}/locations/{location_id}/sensors"
     headers = {"X-API-Key": API_KEY}
-    params = {
-        "parameters_id": 2,
-        "limit": 1000
-    }
-    response = requests.get(url, headers=headers, params=params)
+    
+    response = requests.get(url, headers=headers)
     if response.status_code != 200:
-        logger.warning(f"Failed to fetch location {location_id}")
+        logger.warning(f"Failed to fetch sensors for location {location_id}")
         return pd.DataFrame()
+    
     data = response.json()
     results = data.get("results", [])
     if not results:
+        logger.warning(f"No sensors found for location {location_id}")
         return pd.DataFrame()
-    df = pd.json_normalize(results)
-    return df
+    
+    all_measurements = []
+    for sensor in results:
+        sensor_id = sensor.get("id")
+        sensor_url = f"{BASE_URL}/sensors/{sensor_id}/measurements"
+        params = {"limit": 1000}
+        r = requests.get(sensor_url, headers=headers, params=params)
+        if r.status_code == 200:
+            measurements = r.json().get("results", [])
+            if measurements:
+                df = pd.json_normalize(measurements)
+                df["sensor_id"] = sensor_id
+                all_measurements.append(df)
+    
+    if all_measurements:
+        return pd.concat(all_measurements, ignore_index=True)
+    return pd.DataFrame()
 
 def save_raw_data(df: pd.DataFrame, filename: str) -> None:
     """Save dataframe to data/raw/ folder."""

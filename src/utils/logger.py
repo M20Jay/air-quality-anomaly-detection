@@ -34,7 +34,7 @@ def get_logger(name:str) -> logging.Logger:
     console_handler.setFormatter(formatter)
 
     # File handler — writes to logs/app.log
-    log_filename = f"logs/app_{datetime.now().strftime('%Y%m%d').log}"
+    log_filename = f"logs/app_{datetime.now().strftime('%Y%m%d')}.log"
     file_handler=logging.FileHandler(log_filename)
     file_handler.setLevel(logging.DEBUG)
     file_handler.setFormatter(formatter)
