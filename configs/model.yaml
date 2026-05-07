@@ -37,7 +37,7 @@ lstm:
 
 # ── Isolation Forest Configuration ────────────────────
 isolation_forest:
-  contamination: 0.05     # Expected anomaly rate 5%
+  contamination: 0.02     # Expected anomaly rate 5% but changed to 2% based the calculations
   n_estimators: 100
   random_state: 42
   threshold_severity:
