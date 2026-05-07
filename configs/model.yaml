@@ -13,7 +13,7 @@ data:
 # ── ARIMA Configuration ───────────────────────────────
 arima:
   p: 2                    # Autoregressive order
-  d: 1                    # Differencing order
+  d: 0                    # Differencing order
   q: 2                    # Moving average order
   seasonal: false
 
