@@ -66,9 +66,9 @@ def train_arima(train: pd.Series, config: dict) -> object:
     fitted_model =model.fit()
     logger.info(f" AIC: {fitted_model.aic:.2f}")
     os.makedirs(MODELS_PATH,exist_ok=True)
-    with open(f"{MODELS_PATH} arima_model.pkl", 'wb') as f:
+    with open(f"{MODELS_PATH}arima_model.pkl", 'wb') as f:
         pickle.dump(fitted_model,f)
-    logger.info(f"ARIMA model saved to {MODELS_PATH} arima_model.pkl")
+    logger.info(f"ARIMA model saved to {MODELS_PATH}arima_model.pkl")
     return fitted_model
 
 
