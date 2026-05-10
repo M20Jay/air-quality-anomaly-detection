@@ -29,3 +29,25 @@ logger = get_logger(__name__)
 PROCESSED_PATH = "data/processed/"
 MODELS_PATH = "models/"
 CONFIG_PATH = "configs/model.yaml"
+
+def load_config() -> dict:
+    """Load model configuration"""
+    with open(CONFIG_PATH,'r') as f:
+        config = yaml.safe_load(f)
+    logger.info("Config Loaded")
+    return config
+
+def load_test_data() -> pd.Series:
+    """Load processed data and return test set"""
+    filepath = os.path.join(PROCESSED_PATH,"nairobi_pm25_hourly.csv")
+    df = pd.read_csv(filepath, index_col =0, parse_dates=True)
+    series=df.squeeze()
+    series.index.freq('h')
+    splt_idx = int(len(series)*0.8)
+    test = series[splt_idx:]
+    logger.info(f"Test set: {len(test)} rows")
+    return series, test
+
+
+
+
