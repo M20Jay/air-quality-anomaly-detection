@@ -10,9 +10,6 @@ env/
 .ipynb_checkpoints/
 data/raw/*.csv
 data/processed/*.csv
-models/*.pkl
-models/*.joblib
-models/*.h5
 .DS_Store
 .vscode/
 *.log
