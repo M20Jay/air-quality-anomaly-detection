@@ -14,7 +14,7 @@ import plotly.graph_objects as go
 import plotly.express as px
 from datetime import datetime, timedelta
 
-API_URL = "http://127.0.0.1:8000"
+API_URL = "https://air-quality-anomaly-detection.onrender.com"
 
 st.set_page_config(
     page_title="Nairobi Air Quality Monitor",
