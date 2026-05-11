@@ -1,16 +1,26 @@
 # Air Quality Anomaly Detection Pipeline 🌍
 
 ![Python](https://img.shields.io/badge/Python-3.12-blue)
-![FastAPI](https://img.shields.io/badge/FastAPI-0.103-green)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.135-green)
 ![Docker](https://img.shields.io/badge/Docker-ready-blue)
 ![PyTorch](https://img.shields.io/badge/PyTorch-LSTM-orange)
+![Tests](https://img.shields.io/badge/Tests-10%2F10%20passing-brightgreen)
 ![License](https://img.shields.io/badge/License-MIT-yellow)
 
 **Production time series forecasting and anomaly detection system for Nairobi air quality monitoring.**
 
 Built by [Martin James Ng'ang'a](https://github.com/M20Jay) — MLOps Engineer | Nairobi, Kenya 🇰🇪
 
-> 🔗 **Live API** — added on deployment
+---
+
+## 🔗 Live Deployments
+
+| Service | URL | Description |
+|---|---|---|
+| 🌍 **Interactive Dashboard** | [nairobi-air-quality-dashboard.onrender.com](https://nairobi-air-quality-dashboard.onrender.com) | Streamlit dashboard — interact with forecasts and anomaly detection |
+| ⚡ **Live API** | [air-quality-anomaly-detection.onrender.com/docs](https://air-quality-anomaly-detection.onrender.com/docs) | FastAPI — test all endpoints interactively |
+
+> ⚠️ Free tier hosting — first load may take 30 seconds to wake up. Please refresh if you see a loading message.
 
 ---
 
@@ -30,7 +40,7 @@ This pipeline answers three questions automatically for every sensor reading:
 
 | Model | RMSE | MAE | MAPE | Type |
 |---|---|---|---|---|
-| **ARIMA** | **9.93** | **8.35** | **100.64%** | Forecasting |
+| **ARIMA** | **9.93** | **8.35** | **100.64%** | Forecasting ✅ Best |
 | LSTM (PyTorch) | 19.46 | 17.87 | 155.28% | Forecasting |
 | Prophet | 22.05 | 19.40 | 187.13% | Forecasting |
 | Isolation Forest | — | — | 1 anomaly (0.32%) | Anomaly Detection |
@@ -47,7 +57,7 @@ This pipeline answers three questions automatically for every sensor reading:
 - **Two daily peaks** — 4am and 4pm (traffic and night burning)
 - **Worst day** — Friday (above WHO 24-hour limit of 15 µg/m³)
 - **Dangerous readings** — 1.8% exceed 55 µg/m³ (US EPA threshold)
-- **Maximum spike** — 469 µg/m³ recorded on 2024-02-18 at 4am
+- **Maximum spike** — 469 µg/m³ recorded on 2024-02-18 at 4am — 93x the WHO annual safe limit
 
 ---
 
@@ -61,6 +71,7 @@ This pipeline answers three questions automatically for every sensor reading:
 | Feature Engineering | Lag features · Rolling averages · Time features |
 | API | FastAPI · Uvicorn · Pydantic |
 | Dashboard | Streamlit · Plotly |
+| Testing | pytest — 10/10 tests passing |
 | Containerisation | Docker · docker-compose |
 | Deployment | Render |
 | Versioning | DVC · Git |
@@ -87,6 +98,7 @@ air-quality-anomaly-detection/
 ├── api/
 │   ├── main.py               FastAPI application
 │   └── routes/               Forecast and anomaly endpoints
+├── tests/                    pytest — 10/10 passing
 ├── streamlit_app.py          Interactive dashboard
 ├── Dockerfile
 ├── docker-compose.yml
@@ -99,9 +111,9 @@ air-quality-anomaly-detection/
 
 | Endpoint | Method | Description |
 |---|---|---|
-| `/health` | GET | Service health check |
-| `/forecast` | POST | Forecast next N hours of PM2.5 |
-| `/anomaly` | POST | Detect if a reading is anomalous |
+| `/health` | GET | Service health check — model availability |
+| `/forecast` | POST | Forecast next N hours of PM2.5 (1-168 hours) |
+| `/anomaly` | POST | Detect if a PM2.5 reading is anomalous |
 
 ---
 
@@ -148,6 +160,24 @@ uvicorn api.main:app --reload
 ```bash
 docker-compose up --build
 ```
+
+## Running Tests
+
+```bash
+pytest tests/ -v
+```
+
+---
+
+## Model Files
+
+Trained model files are committed to this repository for deployment simplicity. This is intentional for a portfolio project where model files are small (< 1MB total) and trained on publicly available OpenAQ data.
+
+**Production note:** In a production environment model files would be stored in AWS S3, versioned with DVC, and downloaded at container startup. This approach is implemented in the Week 9 Cloud Deployment upgrade of this system.
+
+## Data Privacy
+
+This project uses publicly available OpenAQ air quality sensor data. No personal, financial, or proprietary data was used in training. In a production environment handling sensitive data, models would never be committed to public repositories.
 
 ---
 
