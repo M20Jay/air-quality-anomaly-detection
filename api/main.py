@@ -21,7 +21,7 @@ logger = get_logger(__name__)
 
 app = FastAPI(
     title="Air Quality Anomaly Detection API",
-    description="Real-time PM2.5 forecasting and anomaly detection for Nairobi air quality monitoring.",
+    description="Real-time PM2.5 forecasting and anomaly detection for Nairobi air quality monitoring. Built by Martin James — MLOps Engineer.",
     version="1.0.0"
 )
 
