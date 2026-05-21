@@ -24,6 +24,12 @@ from sklearn.ensemble import IsolationForest
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.preprocessing import MinMaxScaler
 from src.utils.logger import get_logger
+import mlflow
+import mlflow.sklearn
+import torch
+import torch.nn as nn
+from torch.utils.data import DataLoader, TensorDataset
+
 
 logger = get_logger(__name__)
 
@@ -61,157 +67,192 @@ def train_arima(train: pd.Series, config: dict) -> object:
     p = config['arima']['p']
     d = config['arima']['d']
     q = config['arima']['q']
-    logger.info(f"Train ARIMA ({p}, {d}), {q})...")
-    model = ARIMA(train, order=(p,d,q))
-    fitted_model =model.fit()
-    logger.info(f" AIC: {fitted_model.aic:.2f}")
-    os.makedirs(MODELS_PATH,exist_ok=True)
-    with open(f"{MODELS_PATH}arima_model.pkl", 'wb') as f:
-        pickle.dump(fitted_model,f)
-    logger.info(f"ARIMA model saved to {MODELS_PATH}arima_model.pkl")
+
+    with mlflow.start_run(run_name="ARIMA"):
+
+        # Log parameters
+        mlflow.log_param("p", p)
+        mlflow.log_param("d", d)
+        mlflow.log_param("q", q)
+
+        logger.info(f"Train Arima {p}, {d}, {q}....")
+        model = ARIMA(train, order =(p,d,q))
+        fitted_model = model.fit()
+        logger.info(f"AIC: {fitted_model.aic:.2f}")
+
+        mlflow.log_metric("aic", round(fitted_model.aic, 2))
+
+        os.makedirs(MODELS_PATH, exist_ok=True)
+        with open(f"{MODELS_PATH}arima_model.pkl", 'wb') as f:
+            pickle.dump(fitted_model, f)
+
+        
+        mlflow.log_artifact(f"{MODELS_PATH}arima_model.pkl")
+        logger.info("ARIMA model saved and tracked in MLflow")
+
     return fitted_model
 
 
-def train_prophet(train: pd.Series,  config: dict) -> object:
+def train_prophet(train: pd.Series, config: dict) -> object:
     """Train Prophet model on training data"""
-    logger.info("Training Prophet model...")
 
+    with mlflow.start_run(run_name="Prophet"):
 
-    # Prophet requires specific column names
-    df_prophet = pd.DataFrame({
-        'ds' : train.index,
-        'y'  : train.values
-    })
+        mlflow.log_param("seasonality_mode", config['prophet']['seasonality_mode'])
+        mlflow.log_param("yearly_seasonality", config['prophet']['yearly_seasonality'])
+        mlflow.log_param("weekly_seasonality", config['prophet']['weekly_seasonality'])
+        mlflow.log_param("daily_seasonality", config['prophet']['daily_seasonality'])
 
-    # Remove timezone from datetime
-    df_prophet['ds'] = df_prophet['ds'].dt.tz_localize(None)
+        logger.info("Training Prophet model...")
 
-    model = Prophet(
-        seasonality_mode = config['prophet']['seasonality_mode'],
-        yearly_seasonality = config['prophet']['yearly_seasonality'],
-        weekly_seasonality=config['prophet']['weekly_seasonality'],
-        daily_seasonality=config['prophet']['daily_seasonality']
-    )
-    model.fit(df_prophet)
-    logger.info("Prophet trained successfully")
+        df_prophet = pd.DataFrame({
+            'ds': train.index,
+            'y': train.values
+        })
+        df_prophet['ds'] = df_prophet['ds'].dt.tz_localize(None)
 
-    with open(f"{MODELS_PATH}prophet_model.pkl", 'wb') as f:
-        pickle.dump(model,f)
-        logger.info(f"Prophet model saved to {MODELS_PATH}prophet_model.pkl")
-        return model
+        model = Prophet(
+            seasonality_mode=config['prophet']['seasonality_mode'],
+            yearly_seasonality=config['prophet']['yearly_seasonality'],
+            weekly_seasonality=config['prophet']['weekly_seasonality'],
+            daily_seasonality=config['prophet']['daily_seasonality']
+        )
+        model.fit(df_prophet)
+        logger.info("Prophet trained successfully")
+
+        os.makedirs(MODELS_PATH, exist_ok=True)
+        with open(f"{MODELS_PATH}prophet_model.pkl", 'wb') as f:
+            pickle.dump(model, f)
+
+        mlflow.log_artifact(f"{MODELS_PATH}prophet_model.pkl")
+        logger.info("Prophet model saved and tracked in MLflow")
+
+    return model
     
-def create_sequences(data: np.ndarray, lookback:int) -> tuple:
-    """Create input sequences for LSTM"""
+def create_sequences(data:np.ndarray, lookback: int) -> tuple:
     X,y = [], []
-    for i in range(lookback,len(data)):
+    for i in range(lookback, len(data)):
         X.append(data[i-lookback:i])
-        y.append(data[i,0])
-        return np.array(X), np.array(y)
-    
+        y.append(data[i, 0])
+    return np.array(X), np.array(y)
+
+
 def train_lstm(train: pd.DataFrame, config: dict) -> object:
     """Train LSTM model using PyTorch"""
-    import torch
-    import torch.nn as nn
-    from torch.utils.data import DataLoader, TensorDataset
-    
 
     lookback = config['lstm']['lookback_window']
     units = config['lstm']['units']
     epochs = config['lstm']['epochs']
     batch_size = config['lstm']['batch_size']
 
-    logger.info(f"Training LSTM (PyTorch) — lookback={lookback}, units={units}")
+    with mlflow.start_run(run_name="LSTM"):
 
-    # Scale data
-    scaler = MinMaxScaler()
-    scaled = scaler.fit_transform(train.values)
+        mlflow.log_param("lookback_window", lookback)
+        mlflow.log_param("units", units)
+        mlflow.log_param("epochs", epochs)
+        mlflow.log_param("batch_size", batch_size)
 
-    # Create sequences
-    X, y = create_sequences(scaled, lookback)
+        logger.info(f"Training LSTM (PyTorch) — lookback={lookback}, units={units}, epochs={epochs}, batch_size={batch_size}")
 
-    # Convert to tensors
-    X_tensor = torch.FloatTensor(X)
-    y_tensor = torch.FloatTensor(y)
+        scaler = MinMaxScaler()
+        scaled = scaler.fit_transform(train.values)
 
-    # Split train/val
-    split = int(len(X_tensor) * 0.9)
-    X_train = X_tensor[:split]
-    y_train = y_tensor[:split]
+        X, y = create_sequences(scaled, lookback)
 
-    dataset = TensorDataset(X_train, y_train)
-    loader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
+        X_tensor = torch.FloatTensor(X)
+        y_tensor = torch.FloatTensor(y)
 
-    # Define model
-    class LSTMModel(nn.Module):
-        def __init__(self, input_size, hidden_size):
-            super(LSTMModel, self).__init__()
-            self.lstm1 = nn.LSTM(input_size, hidden_size, batch_first=True)
-            self.dropout = nn.Dropout(0.2)
-            self.lstm2 = nn.LSTM(hidden_size, hidden_size // 2, batch_first=True)
-            self.fc = nn.Linear(hidden_size // 2, 1)
+        split = int(len(X_tensor) * 0.9)
+        X_train = X_tensor[:split]
+        y_train = y_tensor[:split]
 
-        def forward(self, x):
-            out, _ = self.lstm1(x)
-            out = self.dropout(out)
-            out, _ = self.lstm2(out)
-            out = self.fc(out[:, -1, :])
-            return out
+        dataset = TensorDataset(X_train, y_train)
+        loader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
 
-    input_size = X.shape[2]
-    model = LSTMModel(input_size, units)
-    criterion = nn.MSELoss()
-    optimizer = torch.optim.Adam(model.parameters())
+        class LSTMModel(nn.Module):
+            def __init__(self, input_size, hidden_size):
+                super(LSTMModel, self).__init__()
+                self.lstm1 = nn.LSTM(input_size, hidden_size, batch_first=True)
+                self.dropout = nn.Dropout(0.2)
+                self.lstm2 = nn.LSTM(hidden_size, hidden_size // 2, batch_first=True)
+                self.fc = nn.Linear(hidden_size // 2, 1)
 
-    # Train
-    model.train()
-    for epoch in range(epochs):
-        total_loss = 0
-        for X_batch, y_batch in loader:
-            optimizer.zero_grad()
-            output = model(X_batch)
-            loss = criterion(output.squeeze(), y_batch)
-            loss.backward()
-            optimizer.step()
-            total_loss += loss.item()
-        if (epoch + 1) % 10 == 0:
-            logger.info(f"Epoch {epoch+1}/{epochs} Loss: {total_loss:.4f}")
+            def forward(self, x):
+                out, _ = self.lstm1(x)
+                out = self.dropout(out)
+                out, _ = self.lstm2(out)
+                out = self.fc(out[:, -1, :])
+                return out
 
-    # Save
-    os.makedirs(MODELS_PATH, exist_ok=True)
-    torch.save(model.state_dict(), f"{MODELS_PATH}lstm_model.pt")
-    joblib.dump(scaler, f"{MODELS_PATH}lstm_scaler.pkl")
-    logger.info("LSTM model saved")
+        input_size = X.shape[2]
+        model = LSTMModel(input_size, units)
+        criterion = nn.MSELoss()
+        optimizer = torch.optim.Adam(model.parameters())
+
+        model.train()
+        for epoch in range(epochs):
+            total_loss = 0
+            for X_batch, y_batch in loader:
+                optimizer.zero_grad()
+                output = model(X_batch)
+                loss = criterion(output.squeeze(), y_batch)
+                loss.backward()
+                optimizer.step()
+                total_loss += loss.item()
+            if (epoch + 1) % 10 == 0:
+                logger.info(f"Epoch {epoch+1}/{epochs} Loss: {total_loss:.4f}")
+                mlflow.log_metric("loss", round(total_loss, 4), step=epoch+1)
+
+        os.makedirs(MODELS_PATH, exist_ok=True)
+        torch.save(model.state_dict(), f"{MODELS_PATH}lstm_model.pt")
+        joblib.dump(scaler, f"{MODELS_PATH}lstm_scaler.pkl")
+
+        mlflow.log_artifact(f"{MODELS_PATH}lstm_model.pt")
+        mlflow.log_artifact(f"{MODELS_PATH}lstm_scaler.pkl")
+        logger.info("LSTM model saved and tracked in MLflow")
+
     return model, scaler
+
 
 def train_isolation_forest(df: pd.DataFrame, config: dict) -> object:
     """Train Isolation Forest for anomaly detection"""
-    logger.info("Training Isolation Forest...")
 
-    # Load features data
-    filepath=os.path.join(PROCESSED_PATH,"nairobi_pm25_features.csv")
+    with mlflow.start_run(run_name="IsolationForest"):
 
-    df=pd.read_csv(filepath, index_col=0, parse_dates=True)
-    
-    contamination = config['isolation_forest']['contamination']
-    n_estimators = config['isolation_forest']['n_estimators']
-    random_state = config['isolation_forest']['random_state']
+        contamination = config['isolation_forest']['contamination']
+        n_estimators = config['isolation_forest']['n_estimators']
+        random_state = config['isolation_forest']['random_state']
 
-    model = IsolationForest(
-        contamination=contamination,
-        n_estimators=n_estimators,
-        random_state=random_state
-    )
+        mlflow.log_param("contamination", contamination)
+        mlflow.log_param("n_estimators", n_estimators)
+        mlflow.log_param("random_state", random_state)
 
-    model.fit(df[['pm25']])
-    logger.info("Isolation Forest trained successfully")
+        logger.info("Training Isolation Forest...")
 
-    joblib.dump(model, f"{MODELS_PATH}isolation_forest.pkl")
-    logger.info("Isolation Forest saved")
+        filepath = os.path.join(PROCESSED_PATH, "nairobi_pm25_features.csv")
+        df = pd.read_csv(filepath, index_col=0, parse_dates=True)
+
+        model = IsolationForest(
+            contamination=contamination,
+            n_estimators=n_estimators,
+            random_state=random_state
+        )
+
+        model.fit(df[['pm25']])
+        logger.info("Isolation Forest trained successfully")
+
+        os.makedirs(MODELS_PATH, exist_ok=True)
+        joblib.dump(model, f"{MODELS_PATH}isolation_forest.pkl")
+
+        mlflow.log_artifact(f"{MODELS_PATH}isolation_forest.pkl")
+        logger.info("Isolation Forest saved and tracked in MLflow")
+
     return model
 
 
 if __name__ =="__main__":
     logger.info("Starting model training pipeline...")
+    mlflow.set_experiment("air-quality-nairobi")
 
     # Load config and data
     config = load_config()
