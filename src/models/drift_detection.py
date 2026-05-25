@@ -62,6 +62,30 @@ def detect_drift(reference_data: pd.DataFrame, current_data: pd.DataFrame) -> st
     os.makedirs(REPORTS_PATH, exist_ok=True)
     report_path = os.path.join(REPORTS_PATH, "drift_report.html")
     report.save_html(report_path)
+    
+    # Inject author signature
+    with open(report_path, 'r') as f:
+        html = f.read()
+    
+    signature = """
+    <div style="text-align:center; padding:20px; font-family:Arial; 
+                color:#555; border-top:2px solid #4169E1; margin-top:30px;">
+      <p style="font-size:16px; font-weight:bold;">
+        🌍 Built by Martin James Ng'ang'a | MLOps Engineer | Nairobi, Kenya 🇰🇪
+      </p>
+      <p style="font-size:14px;">Week 8 — MLOps Automation · Evidently AI Drift Detection</p>
+      <p style="font-size:14px;">
+        <a href="https://github.com/M20Jay" style="color:#4169E1;">github.com/M20Jay</a> · 
+        <a href="https://www.linkedin.com/in/martin-james-nganga" style="color:#4169E1;">LinkedIn</a>
+      </p>
+    </div>
+    """
+    
+    html = html.replace('</body>', signature + '</body>')
+    
+    with open(report_path, 'w') as f:
+        f.write(html)
+    
     logger.info(f"Drift report saved to {report_path}")
 
     return report_path
