@@ -1,0 +1,5 @@
+outs:
+- md5: 87334b7b18b5d2f618d3c23c5c5adadd
+  size: 132277
+  hash: md5
+  path: lstm_model.pt

@@ -1,0 +1,5 @@
+outs:
+- md5: f79ffc30b1e22a29bb6ac53a8216ae55
+  size: 71235
+  hash: md5
+  path: nairobi_pm25_hourly.csv
