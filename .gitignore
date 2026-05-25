@@ -13,4 +13,5 @@ data/processed/*.csv
 .DS_Store
 .vscode/
 *.log
-logs/
+logs/mlruns/
+mlflow.db

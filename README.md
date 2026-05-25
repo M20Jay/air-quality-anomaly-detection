@@ -177,7 +177,7 @@ Trained model files are committed to this repository for deployment simplicity. 
 
 ## Data Privacy
 
-This project uses publicly available OpenAQ air quality sensor data. No personal, financial, or proprietary data was used in training. In a production environment handling sensitive data, models would never be committed to public repositories.
+This project uses publicly available OpenAQ air quality sensor data. No personal, financial, or proprietary data was used in training. In a production environment handling sensitaive data, models would never be committed to public repositories.
 
 ---
 
