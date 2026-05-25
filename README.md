@@ -181,4 +181,17 @@ This project uses publicly available OpenAQ air quality sensor data. No personal
 
 ---
 
+## ⚙️ Week 8 — MLOps Automation
+
+Applying production MLOps tooling to this pipeline as part of the 15-week programme.
+
+| Tool | Purpose | Status |
+|------|---------|--------|
+| MLflow | Experiment tracking — all 4 models tracked with params, metrics and artifacts | ✅ Complete |
+| DVC | Data version control — dataset and model versioning | 🔄 In Progress |
+| Evidently AI | Data drift and model performance monitoring | 🔲 Pending |
+| Prefect | Automated retraining workflow orchestration | 🔲 Pending |
+| GitHub Actions | CI/CD — auto test and deploy on every push | 🔲 Pending |
+
+---
 *Building from Nairobi. For the environment and the world. 🇰🇪*
