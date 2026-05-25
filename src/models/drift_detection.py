@@ -81,7 +81,7 @@ def detect_drift(reference_data: pd.DataFrame, current_data: pd.DataFrame) -> st
     </div>
     """
     
-    html = html.replace('</body>', signature + '</body>')
+    html = html.replace('&lt;/body&gt;', signature + '&lt;/body&gt;')
     
     with open(report_path, 'w') as f:
         f.write(html)
