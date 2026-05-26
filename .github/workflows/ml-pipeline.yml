@@ -44,7 +44,7 @@ jobs:
           PYTHONPATH=. python src/models/drift_detection.py
 
       - name: Upload drift report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: drift-report
           path: reports/drift/drift_report.html
