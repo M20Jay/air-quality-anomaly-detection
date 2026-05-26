@@ -16,3 +16,4 @@ data/processed/*.csv
 logs/mlruns/
 mlflow.db
 mlflow.db
+mlruns/
