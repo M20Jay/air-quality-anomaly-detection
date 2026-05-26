@@ -20,11 +20,10 @@ Built by [Martin James Ng'ang'a](https://github.com/M20Jay) — MLOps Engineer |
 | 🌍 **Interactive Dashboard** | [nairobi-air-quality-dashboard.onrender.com](https://nairobi-air-quality-dashboard.onrender.com) | Streamlit dashboard — interact with forecasts and anomaly detection |
 | ⚡ **Live API** | [air-quality-anomaly-detection.onrender.com/docs](https://air-quality-anomaly-detection.onrender.com/docs) | FastAPI — test all endpoints interactively |
 
-> ⚠️ Free tier hosting — first load may take 30 seconds to wake up. Please refresh if you see a loading message.
 > ⚠️ **Deployment Notice:** APIs previously hosted on Render free tier.
 > Currently migrating to AWS EC2 for permanent 24/7 production deployment
 > with no cold starts or monthly suspensions.
-> All services will be live again by Week 10 of this programme.
+> All services will be live again by **31 May 2026**.
 > Full source code, documentation and screenshots available throughout this repository.
 
 ---

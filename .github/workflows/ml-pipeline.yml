@@ -12,9 +12,15 @@ name: Air Quality ML Pipeline
 on:
   push:
     branches: [ main ]
+    paths:
+      - 'src/**'
+      - 'data/**'
+      - 'requirements.txt'
   pull_request:
     branches: [ main ]
   workflow_dispatch:
+  schedule:
+    - cron: '0 6 * * 1'
 
 jobs:
   ml-pipeline:
