@@ -21,6 +21,11 @@ Built by [Martin James Ng'ang'a](https://github.com/M20Jay) — MLOps Engineer |
 | ⚡ **Live API** | [air-quality-anomaly-detection.onrender.com/docs](https://air-quality-anomaly-detection.onrender.com/docs) | FastAPI — test all endpoints interactively |
 
 > ⚠️ Free tier hosting — first load may take 30 seconds to wake up. Please refresh if you see a loading message.
+> ⚠️ **Deployment Notice:** APIs previously hosted on Render free tier.
+> Currently migrating to AWS EC2 for permanent 24/7 production deployment
+> with no cold starts or monthly suspensions.
+> All services will be live again by Week 10 of this programme.
+> Full source code, documentation and screenshots available throughout this repository.
 
 ---
 
@@ -73,7 +78,7 @@ This pipeline answers three questions automatically for every sensor reading:
 | Dashboard | Streamlit · Plotly |
 | Testing | pytest — 10/10 tests passing |
 | Containerisation | Docker · docker-compose |
-| Deployment | Render |
+| Deployment | Render → migrating to AWS EC2 (Week 10) |
 | Versioning | DVC · Git |
 | Logging | Python logging · Rotating file handler |
 
@@ -136,7 +141,7 @@ FastAPI endpoints              /forecast  /anomaly  /health
     ↓
 Streamlit dashboard            interactive visualisation
     ↓
-Docker + Render                production deployment
+Docker + AWS EC2               production deployment (migrating from Render Week 10)
 ```
 
 ---
