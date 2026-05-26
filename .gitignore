@@ -9,7 +9,6 @@ env/
 .venv/
 .ipynb_checkpoints/
 data/raw/*.csv
-data/processed/*.csv
 .DS_Store
 .vscode/
 *.log
