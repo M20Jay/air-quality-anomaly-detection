@@ -190,7 +190,7 @@ Applying production MLOps tooling to this pipeline as part of the 15-week progra
 | MLflow | Experiment tracking — all 4 models tracked with params, metrics and artifacts | ✅ Complete |
 | DVC | Data version control — dataset and model versioning | ✅ Complete |
 | Evidently AI | Data drift detection — PM2.5 drift detected (mean 19.02 → 12.50 µg/m³) | ✅ Complete |
-| Prefect | Automated retraining workflow orchestration | 🔲 Pending |
+| Prefect | Workflow orchestration — 3 successful pipeline runs | ✅ Complete |
 | GitHub Actions | CI/CD — auto test and deploy on every push | 🔲 Pending |
 
 ---
@@ -201,6 +201,12 @@ Applying production MLOps tooling to this pipeline as part of the 15-week progra
 ![Evidently Drift Report](screenshots/evidently-drift-report.png)
 
 🔗 **Live Report:** [View Drift Report](https://m20jay.github.io/air-quality-anomaly-detection)
+
+---
+
+### Prefect Pipeline Runs
+![Prefect Dashboard](screenshots/prefect-dashboard.png)
+![Prefect Runs](screenshots/prefect-runs.png)
 
 ---
 *Building from Nairobi. For the environment and the world. 🇰🇪*
