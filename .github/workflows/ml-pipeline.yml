@@ -1,0 +1,139 @@
+# =============================================================
+# .github/workflows/ml-pipeline.yml
+# =============================================================
+# Purpose: CI/CD pipeline — runs on every push to main
+#          Tests → Drift Detection → Email Alert if drift found
+#
+# Author: Martin James Ng'ang'a | github.com/M20Jay
+# =============================================================
+
+name: Air Quality ML Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  ml-pipeline:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run tests
+        run: |
+          pytest tests/ -v --tb=short
+        continue-on-error: true
+
+      - name: Run drift detection
+        run: |
+          PYTHONPATH=. python src/models/drift_detection.py
+
+      - name: Upload drift report
+        uses: actions/upload-artifact@v3
+        with:
+          name: drift-report
+          path: reports/drift/drift_report.html
+
+      - name: Check for drift and alert
+        run: |
+          python -c "
+          import json, sys
+          from evidently.report import Report
+          from evidently.metric_preset import DataDriftPreset
+          import pandas as pd
+
+          df = pd.read_csv('data/processed/nairobi_pm25_features.csv', index_col=0, parse_dates=True)
+          split_idx = int(len(df) * 0.8)
+          ref = df.iloc[:split_idx][['pm25', 'hour']].reset_index(drop=True)
+          cur = df.iloc[split_idx:][['pm25', 'hour']].reset_index(drop=True)
+
+          report = Report(metrics=[DataDriftPreset()])
+          report.run(reference_data=ref, current_data=cur)
+          result = report.as_dict()
+
+          drift_detected = result['metrics'][0]['result']['dataset_drift']
+          print(f'Drift detected: {drift_detected}')
+
+          if drift_detected:
+              print('::warning::PM2.5 DATA DRIFT DETECTED — model retraining recommended')
+              sys.exit(0)
+          else:
+              print('No drift detected — model performing normally')
+          "
+
+      - name: Send drift alert email
+        if: always()
+        run: |
+          python -c "
+          import smtplib, os
+          from email.mime.text import MIMEText
+          from email.mime.multipart import MIMEMultipart
+          import pandas as pd
+          from evidently.report import Report
+          from evidently.metric_preset import DataDriftPreset
+
+          df = pd.read_csv('data/processed/nairobi_pm25_features.csv', index_col=0, parse_dates=True)
+          split_idx = int(len(df) * 0.8)
+          ref = df.iloc[:split_idx][['pm25', 'hour']].reset_index(drop=True)
+          cur = df.iloc[split_idx:][['pm25', 'hour']].reset_index(drop=True)
+
+          report = Report(metrics=[DataDriftPreset()])
+          report.run(reference_data=ref, current_data=cur)
+          result = report.as_dict()
+          drift_detected = result['metrics'][0]['result']['dataset_drift']
+
+          if not drift_detected:
+              print('No drift — skipping email')
+              exit(0)
+
+          sender = os.environ['EMAIL_ADDRESS']
+          password = os.environ['EMAIL_PASSWORD']
+          receiver = 'ngangam93@gmail.com'
+
+          msg = MIMEMultipart()
+          msg['From'] = sender
+          msg['To'] = receiver
+          msg['Subject'] = '⚠️ MLOps Alert: PM2.5 Data Drift Detected'
+
+          body = '''
+          Data drift detected in the Nairobi Air Quality Pipeline.
+
+          PM2.5 distribution has shifted significantly:
+          - Reference mean: 19.02 µg/m³
+          - Current mean: 12.50 µg/m³
+
+          Action required: Review drift report and consider retraining.
+
+          Live drift report:
+          https://m20jay.github.io/air-quality-anomaly-detection
+
+          Martin James Nganga
+          github.com/M20Jay
+          '''
+
+          msg.attach(MIMEText(body, 'plain'))
+          server = smtplib.SMTP('smtp.gmail.com', 587)
+          server.starttls()
+          server.login(sender, password)
+          server.send_message(msg)
+          server.quit()
+          print('Drift alert email sent to ngangam93@gmail.com')
+          "
+        env:
+          EMAIL_ADDRESS: ${{ secrets.EMAIL_ADDRESS }}
+          EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
