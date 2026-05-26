@@ -83,25 +83,56 @@ jobs:
           import smtplib, os
           from email.mime.text import MIMEText
           from email.mime.multipart import MIMEMultipart
+          import pandas as pd
+          from evidently.report import Report
+          from evidently.metric_preset import DataDriftPreset
+
+          df = pd.read_csv('data/processed/nairobi_pm25_features.csv', index_col=0, parse_dates=True)
+          split_idx = int(len(df) * 0.8)
+          ref = df.iloc[:split_idx][['pm25', 'hour']].reset_index(drop=True)
+          cur = df.iloc[split_idx:][['pm25', 'hour']].reset_index(drop=True)
+
+          report = Report(metrics=[DataDriftPreset()])
+          report.run(reference_data=ref, current_data=cur)
+          result = report.as_dict()
+          drift_detected = result['metrics'][0]['result']['dataset_drift']
+
+          if not drift_detected:
+              print('No drift — skipping email')
+              exit(0)
 
           sender = os.environ['EMAIL_ADDRESS']
           password = os.environ['EMAIL_PASSWORD']
-          print(f'Email address length: {len(sender)}')
-          print(f'Password length: {len(password)}')
-          print(f'Email: {sender}')
+          receiver = 'ngangam93@gmail.com'
 
           msg = MIMEMultipart()
           msg['From'] = sender
-          msg['To'] = sender
-          msg['Subject'] = 'Test from GitHub Actions'
+          msg['To'] = receiver
+          msg['Subject'] = '⚠️ MLOps Alert: PM2.5 Data Drift Detected'
 
-          msg.attach(MIMEText('Test email', 'plain'))
+          body = '''
+          Data drift detected in the Nairobi Air Quality Pipeline.
+
+          PM2.5 distribution has shifted significantly:
+          - Reference mean: 19.02 µg/m3
+          - Current mean: 12.50 µg/m3
+
+          Action required: Review drift report and consider retraining.
+
+          Live drift report:
+          https://m20jay.github.io/air-quality-anomaly-detection
+
+          Martin James Nganga
+          github.com/M20Jay
+          '''
+
+          msg.attach(MIMEText(body, 'plain'))
           server = smtplib.SMTP('smtp.gmail.com', 587)
           server.starttls()
           server.login(sender, password)
           server.send_message(msg)
           server.quit()
-          print('Email sent successfully')
+          print('Drift alert email sent to ngangam93@gmail.com')
           "
         env:
           EMAIL_ADDRESS: ${{ secrets.EMAIL_ADDRESS }}
