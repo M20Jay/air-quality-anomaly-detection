@@ -62,33 +62,37 @@ def detect_drift(reference_data: pd.DataFrame, current_data: pd.DataFrame) -> st
     os.makedirs(REPORTS_PATH, exist_ok=True)
     report_path = os.path.join(REPORTS_PATH, "drift_report.html")
     report.save_html(report_path)
-    
-    # Inject author signature
-    with open(report_path, 'r') as f:
-        html = f.read()
-    
-    signature = """
-    <div style="text-align:center; padding:20px; font-family:Arial; 
-                color:#555; border-top:2px solid #4169E1; margin-top:30px;">
-      <p style="font-size:16px; font-weight:bold;">
-        🌍 Built by Martin James Ng'ang'a | MLOps Engineer | Nairobi, Kenya 🇰🇪
-      </p>
-      <p style="font-size:14px;">Week 8 — MLOps Automation · Evidently AI Drift Detection</p>
-      <p style="font-size:14px;">
-        <a href="https://github.com/M20Jay" style="color:#4169E1;">github.com/M20Jay</a> · 
-        <a href="https://www.linkedin.com/in/martin-james-nganga" style="color:#4169E1;">LinkedIn</a>
-      </p>
-    </div>
-    """
-    
-    html = html.replace('&lt;/body&gt;', signature + '&lt;/body&gt;')
-    
-    with open(report_path, 'w') as f:
-        f.write(html)
-    
     logger.info(f"Drift report saved to {report_path}")
 
-    return report_path
+    # Create wrapper with author signature
+    wrapper_path = os.path.join(REPORTS_PATH, "drift_report_signed.html")
+    with open(wrapper_path, 'w') as f:
+        f.write(f"""<!DOCTYPE html>
+<html>
+<head>
+  <title>Air Quality Drift Report — Martin James Ng'ang'a</title>
+</head>
+<body style="margin:0; padding:0; font-family:Arial;">
+  <div style="text-align:center; padding:15px; background:#4169E1; color:white;">
+    <h2 style="margin:0;">🌍 Nairobi Air Quality — Data Drift Report</h2>
+    <p style="margin:5px 0;">
+      Built by <strong>Martin James Ng'ang'a</strong> | MLOps Engineer | Nairobi, Kenya 🇰🇪
+    </p>
+    <p style="margin:5px 0;">
+      Week 8 — MLOps Automation · Evidently AI Drift Detection &nbsp;|&nbsp;
+      <a href="https://github.com/M20Jay" style="color:white;">github.com/M20Jay</a>
+      &nbsp;·&nbsp;
+      <a href="https://www.linkedin.com/in/martin-james-nganga" style="color:white;">LinkedIn</a>
+    </p>
+  </div>
+  <iframe src="drift_report.html"
+          style="width:100%; height:calc(100vh - 100px); border:none;">
+  </iframe>
+</body>
+</html>""")
+    logger.info(f"Signed report saved to {wrapper_path}")
+
+    return wrapper_path
 
 
 if __name__ == "__main__":
