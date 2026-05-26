@@ -191,7 +191,7 @@ Applying production MLOps tooling to this pipeline as part of the 15-week progra
 | DVC | Data version control — dataset and model versioning | ✅ Complete |
 | Evidently AI | Data drift detection — PM2.5 drift detected (mean 19.02 → 12.50 µg/m³) | ✅ Complete |
 | Prefect | Workflow orchestration — 3 successful pipeline runs | ✅ Complete |
-| GitHub Actions | CI/CD — auto test and deploy on every push | 🔲 Pending |
+| GitHub Actions | CI/CD automation — drift detection + email alerts on every push | ✅ Complete |
 
 ---
 ## 📊 Evidently AI Drift Report
@@ -209,4 +209,10 @@ Applying production MLOps tooling to this pipeline as part of the 15-week progra
 ![Prefect Runs](screenshots/prefect-runs.png)
 
 ---
+### GitHub Actions CI/CD
+![GitHub Actions](screenshots/github-actions-run.png)
+🔗 **Live Pipeline:** [View Actions](https://github.com/M20Jay/air-quality-anomaly-detection/actions)
+
+---
+
 *Building from Nairobi. For the environment and the world. 🇰🇪*
