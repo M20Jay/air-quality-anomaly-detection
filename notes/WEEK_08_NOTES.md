@@ -1,10 +1,3 @@
-# Week 8 — MLOps Automation
-
-**Project:** Air Quality Anomaly Detection Pipeline — MLOps Layer
-**Dataset:** OpenAQ API — Real Nairobi PM2.5 sensor data
-**Stack:** MLflow · DVC · Evidently AI · Prefect · GitHub Actions
-
----
 
 ## Overview
 
