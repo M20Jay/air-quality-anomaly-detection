@@ -217,5 +217,8 @@ Applying production MLOps tooling to this pipeline as part of the 15-week progra
 🔗 **Live Pipeline:** [View Actions](https://github.com/M20Jay/air-quality-anomaly-detection/actions)
 
 ---
+### MLflow Experiment Tracking
+![MLflow Runs](screenshots/mlflow-runs.png)
 
+---
 *Building from Nairobi. For the environment and the world. 🇰🇪*
