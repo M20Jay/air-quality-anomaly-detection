@@ -253,17 +253,26 @@ def train_isolation_forest(df: pd.DataFrame, config: dict) -> object:
 if __name__ =="__main__":
     logger.info("Starting model training pipeline...")
     mlflow.set_experiment("air-quality-nairobi")
-
     # Load config and data
     config = load_config()
     series = load_data()
     train, test = split_data(series)
-
     features_path = os.path.join(PROCESSED_PATH, "nairobi_pm25_features.csv")
     df_features = pd.read_csv(features_path, index_col=0, parse_dates=True)
-
     split_idx = int(len(df_features) * 0.8)
     df_train = df_features.iloc[:split_idx]
+
+    # Log data metadata to MLflow tags
+    mlflow.set_experiment_tags({
+        "data_start_date": str(df_features.index.min().date()),
+        "data_end_date": str(df_features.index.max().date()),
+        "total_rows": str(len(df_features)),
+        "reference_mean_pm25": str(round(df_features['pm25'].mean(), 2)),
+        "training_rows": str(split_idx),
+        "test_rows": str(len(df_features) - split_idx),
+    })
+    logger.info(f"Data range: {df_features.index.min().date()} → {df_features.index.max().date()}")
+    logger.info(f"Total rows: {len(df_features)} | Training: {split_idx} | Test: {len(df_features) - split_idx}")
 
     # Train all models
     train_arima(train, config)

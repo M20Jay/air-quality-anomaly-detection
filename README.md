@@ -14,7 +14,6 @@ Built by [Martin James Ng'ang'a](https://github.com/M20Jay) — MLOps Engineer |
 ---
 
 ## 🔗 Live Deployments
-
 | Service | URL | Description |
 |---|---|---|
 | 🌍 **Interactive Dashboard** | [nairobi-air-quality-dashboard.onrender.com](https://nairobi-air-quality-dashboard.onrender.com) | Streamlit dashboard — interact with forecasts and anomaly detection |
