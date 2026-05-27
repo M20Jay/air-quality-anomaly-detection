@@ -133,5 +133,5 @@ def air_quality_pipeline(run_ingestion: bool = True):
 
 
 if __name__ == "__main__":
-    # Run without ingestion to use existing data
-    air_quality_pipeline(run_ingestion=False)
+    # Full end to end pipeline — fetch fresh data
+    air_quality_pipeline(run_ingestion=True)
