@@ -111,23 +111,26 @@ These capture temporal dependencies for LSTM and Isolation Forest.
 ---
 
 ## Pipeline Architecture
+
+```
 OpenAQ API
-↓
-src/data/ingestion.py          → data/raw/nairobi_pm25_raw.csv
-↓
-src/data/preprocessing.py      → data/processed/nairobi_pm25_hourly.csv
-↓
-src/features/feature_engineering.py → data/processed/nairobi_pm25_features.csv
-↓
-src/models/train.py            → models/ (ARIMA · Prophet · LSTM · IsolationForest)
-↓
-src/models/evaluate.py         → RMSE · MAE · MAPE comparison
-↓
-api/main.py                    → /forecast · /anomaly · /health
-↓
-streamlit_app.py               → interactive dashboard
-↓
-Docker + AWS EC2               → production deployment
+    ↓
+src/data/ingestion.py                → data/raw/nairobi_pm25_raw.csv
+    ↓
+src/data/preprocessing.py            → data/processed/nairobi_pm25_hourly.csv
+    ↓
+src/features/feature_engineering.py  → data/processed/nairobi_pm25_features.csv
+    ↓
+src/models/train.py                  → models/ (ARIMA · Prophet · LSTM · IsolationForest)
+    ↓
+src/models/evaluate.py               → RMSE · MAE · MAPE comparison
+    ↓
+api/main.py                          → /forecast · /anomaly · /health
+    ↓
+streamlit_app.py                     → interactive dashboard
+    ↓
+Docker + AWS EC2                     → production deployment
+```
 
 ---
 
