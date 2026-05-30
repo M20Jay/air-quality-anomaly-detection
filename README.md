@@ -17,7 +17,9 @@ Built by [Martin James Ng'ang'a](https://github.com/M20Jay) — MLOps Engineer |
 | Service | URL | Description |
 |---|---|---|
 | 🌍 **Interactive Dashboard** | [nairobi-air-quality-dashboard.onrender.com](https://nairobi-air-quality-dashboard.onrender.com) | Streamlit dashboard — interact with forecasts and anomaly detection |
-| ⚡ **Live API** | [air-quality-anomaly-detection.onrender.com/docs](https://air-quality-anomaly-detection.onrender.com/docs) | FastAPI — test all endpoints interactively |
+| ⚡ **Live API** | [18.199.241.52:8000/docs](http://18.199.241.52:8000/docs) | FastAPI on AWS EC2 Frankfurt — live 24/7, no cold starts |
+
+> ✅ **Live on AWS EC2 Frankfurt** — Deployed 30 May 2026. Docker containerised. No cold starts. No monthly suspensions. 24/7 uptime.
 
 > ⚠️ **Deployment Notice:** APIs previously hosted on Render free tier.
 > Currently migrating to AWS EC2 for permanent 24/7 production deployment
