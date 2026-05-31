@@ -16,7 +16,7 @@ Built by [Martin James Ng'ang'a](https://github.com/M20Jay) — MLOps Engineer |
 ## 🔗 Live Deployments
 | Service | URL | Description |
 |---|---|---|
-| 🌍 **Interactive Dashboard** | [nairobi-air-quality-dashboard.onrender.com](https://nairobi-air-quality-dashboard.onrender.com) *(migrating to AWS Week 10)* | Streamlit dashboard — interact with forecasts and anomaly detection |
+| 🌍 **Interactive Dashboard** | [nairobi-air-quality-dashboard.onrender.com](https://nairobi-air-quality-dashboard.onrender.com) *(migrating to AWS Week 10)* | Streamlit dashboard — live on AWS EC2 · dark theme · forecast · anomaly detection |
 | ⚡ **Live API** | [18.184.3.203:8000/docs](http://18.184.3.203:8000/docs) | FastAPI on AWS EC2 Frankfurt — live 24/7, no cold starts |
 
 
