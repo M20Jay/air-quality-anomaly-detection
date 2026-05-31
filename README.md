@@ -17,14 +17,10 @@ Built by [Martin James Ng'ang'a](https://github.com/M20Jay) — MLOps Engineer |
 | Service | URL | Description |
 |---|---|---|
 | 🌍 **Interactive Dashboard** | [nairobi-air-quality-dashboard.onrender.com](https://nairobi-air-quality-dashboard.onrender.com) | Streamlit dashboard — interact with forecasts and anomaly detection |
-| ⚡ **Live API** | [18.199.241.52:8000/docs](http://18.199.241.52:8000/docs) | FastAPI on AWS EC2 Frankfurt — live 24/7, no cold starts |
+| ⚡ **Live API** | [18.184.3.203:8000/docs](http://18.184.3.203:8000/docs) | FastAPI on AWS EC2 Frankfurt — live 24/7, no cold starts |
 
-> ✅ **Live on AWS EC2 Frankfurt** — Deployed 30 May 2026. Docker containerised. No cold starts. No monthly suspensions. 24/7 uptime.
 
-> ⚠️ **Deployment Notice:** APIs previously hosted on Render free tier.
-> Currently migrating to AWS EC2 for permanent 24/7 production deployment
 > with no cold starts or monthly suspensions.
-> All services will be live again by **31 May 2026**.
 > Full source code, documentation and screenshots available throughout this repository.
 
 ---
@@ -78,7 +74,7 @@ This pipeline answers three questions automatically for every sensor reading:
 | Dashboard | Streamlit · Plotly |
 | Testing | pytest — 10/10 tests passing |
 | Containerisation | Docker · docker-compose |
-| Deployment | Render → migrating to AWS EC2 (Week 10) |
+| Deployment | AWS EC2 Frankfurt — live 24/7 |
 | Versioning | DVC · Git |
 | Logging | Python logging · Rotating file handler |
 
@@ -141,7 +137,7 @@ FastAPI endpoints              /forecast  /anomaly  /health
     ↓
 Streamlit dashboard            interactive visualisation
     ↓
-Docker + AWS EC2               production deployment (migrating from Render Week 10)
+Docker + AWS EC2               production deployment on AWS EC2 Frankfurt
 ```
 
 ---
