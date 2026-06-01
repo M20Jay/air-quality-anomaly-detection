@@ -653,3 +653,62 @@ sed -i 's/            logger.warning(f"DB save skipped: {e}")/            print(
 - Region: eu-central-1 Frankfurt
 - Disk: 30GB (expanded from 20GB)
 - Memory: 2GB · Usage ~64%
+
+---
+
+## Week 8 Bonus — AWS EC2 Migration
+
+Migrated all 6 production APIs from Render free tier to AWS EC2 t3.small Frankfurt.
+
+### Key commands used
+
+```bash
+# SSH to server
+ssh -i ~/Documents/GitHub/mlops-key.pem ubuntu@18.184.3.203
+
+# Start all services after reboot
+cd ~/recommendation-system && docker compose up -d
+cd ~/churn-prediction-pipeline && docker compose up -d churn-api
+cd ~/fraud-detection-pipeline && docker compose -f docker-compose-api.yml up -d
+cd ~/customer-segmentation && docker compose up -d seg_fastapi
+cd ~/credit-risk-scoring-pipeline && docker compose up -d api
+cd ~/air-quality-anomaly-detection && docker compose up -d
+
+# ngrok tunnel (auto-starts via systemd)
+sudo systemctl status ngrok
+
+# Cloudflare tunnel (auto-starts via systemd)
+sudo systemctl status cloudflared-airquality
+
+# Check all containers
+docker ps
+
+# Expand disk
+sudo growpart /dev/nvme0n1 1
+sudo resize2fs /dev/nvme0n1p1
+df -h /
+```
+
+### sed commands for README updates
+
+```bash
+# Update IP across all repos
+sed -i '' 's|18.199.241.52|18.184.3.203|g' README.md
+
+# Fix port conflict — credit risk postgres
+sed -i 's/"5432:5432"/"5435:5432"/' docker-compose.yml
+
+# Fix fraud API model path
+sed -i 's/restart: unless-stopped/environment:\n      - MODEL_PATH=\/app\/src\/fraud_pipeline.pkl\n    restart: unless-stopped/' docker-compose-api.yml
+
+# Fix recommendation logger bug
+sed -i 's/            logger.warning(f"DB save skipped: {e}")/            print(f"DB save skipped: {e}")/' api/routes/recommend.py
+```
+
+### Instance details
+- Instance: i-0b3c0fda7da6ccb95
+- IP: 18.184.3.203
+- Type: t3.small (upgraded from t3.micro — OOM crashes)
+- Region: eu-central-1 Frankfurt
+- Disk: 30GB (expanded from 20GB)
+- Memory: 2GB · Usage ~64%
