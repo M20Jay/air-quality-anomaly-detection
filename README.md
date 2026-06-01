@@ -16,7 +16,7 @@ Built by [Martin James Ng'ang'a](https://github.com/M20Jay) — MLOps Engineer |
 ## 🔗 Live Deployments
 | Service | URL | Description |
 |---|---|---|
-| 🌍 **Interactive Dashboard** | [Live Dashboard](https://publisher-kinda-married-finished.trycloudflare.com) | Streamlit dashboard — live on AWS EC2 · dark theme · forecast · anomaly detection |
+| 🌍 **Interactive Dashboard** | [https://publisher-kinda-married-finished.trycloudflare.com](https://publisher-kinda-married-finished.trycloudflare.com) | Streamlit dashboard — live on AWS EC2 · dark theme · forecast · anomaly detection |
 | ⚡ **Live API** | [18.184.3.203:8000/docs](http://18.184.3.203:8000/docs) | FastAPI on AWS EC2 Frankfurt — live 24/7, no cold starts |
 
 
@@ -174,7 +174,7 @@ pytest tests/ -v
 
 Trained model files are committed to this repository for deployment simplicity. This is intentional for a portfolio project where model files are small (< 1MB total) and trained on publicly available OpenAQ data.
 
-**Production note:** In a production environment model files would be stored in AWS S3, versioned with DVC, and downloaded at container startup. This approach is implemented in the Week 9 Cloud Deployment upgrade of this system.
+**Production note:** In a production environment model files would be stored in AWS S3, versioned with DVC, and downloaded at container startup. This approach will be implemented in the Week 10 AWS S3 + ECR upgrade.
 
 ## Data Privacy
 
