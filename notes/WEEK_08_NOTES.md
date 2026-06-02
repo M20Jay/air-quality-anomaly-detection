@@ -148,10 +148,11 @@ dvc status
 dvc remote list
 
 # Add local remote
-dvc remote add myremote /tmp/dvc-storage
+dvc remote add myremote /home/ubuntu/dvc-storage
 
 # Set default remote
 dvc remote default myremote
+# Note: /tmp resets on reboot — use /home/ubuntu/dvc-storage on AWS EC2
 ```
 
 ---
