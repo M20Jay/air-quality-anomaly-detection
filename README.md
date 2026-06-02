@@ -20,8 +20,6 @@ Built by [Martin James Ng'ang'a](https://github.com/M20Jay) — MLOps Engineer |
 | ⚡ **Live API** | [18.184.3.203:8000/docs](http://18.184.3.203:8000/docs) | FastAPI on AWS EC2 Frankfurt — live 24/7, no cold starts |
 
 
-> with no cold starts or monthly suspensions.
-> Full source code, documentation and screenshots available throughout this repository.
 
 ---
 
@@ -172,19 +170,19 @@ pytest tests/ -v
 
 ## Model Files
 
-Trained model files are committed to this repository for deployment simplicity. This is intentional for a portfolio project where model files are small (< 1MB total) and trained on publicly available OpenAQ data.
+Trained model files are committed to this repository for deployment simplicity. This is intentional for a portfolio project where model files are under 5MB total and trained on publicly available OpenAQ data.
 
 **Production note:** In a production environment model files would be stored in AWS S3, versioned with DVC, and downloaded at container startup. This approach will be implemented in the Week 10 AWS S3 + ECR upgrade.
 
 ## Data Privacy
 
-This project uses publicly available OpenAQ air quality sensor data. No personal, financial, or proprietary data was used in training. In a production environment handling sensitaive data, models would never be committed to public repositories.
+This project uses publicly available OpenAQ air quality sensor data. No personal, financial, or proprietary data was used in training. In a production environment handling sensitive data, models would never be committed to public repositories.
 
 ---
 
 ## ⚙️ Week 8 — MLOps Automation
 
-Applying production MLOps tooling to this pipeline as part of the 15-week programme.
+Production MLOps tooling applied to this pipeline — fully automated, monitored and versioned. Week 8 complete. ✅
 
 | Tool | Purpose | Status |
 |------|---------|--------|
