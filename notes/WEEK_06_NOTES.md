@@ -207,3 +207,132 @@ PYTHONPATH=. python src/models/evaluate.py
 ---
 
 *Week 6 · 15-Week MLOps Programme · Built in Nairobi, Kenya 🇰🇪*
+## Debugging Reference
+
+### Common Errors and Fixes
+
+| Error | Fix |
+|-------|-----|
+| `ModuleNotFoundError` | Run as `PYTHONPATH=. python src/models/train.py` |
+| `statsmodels ARIMA convergence warning` | Normal — ARIMA optimiser warnings do not affect results |
+| `LSTM loss not decreasing` | Check learning rate — try 0.001. Check data is scaled with MinMaxScaler |
+| `Isolation Forest all predictions -1` | contamination parameter too high — reduce to 0.01 |
+| `OpenAQ API rate limit` | Add `time.sleep(1)` between requests in ingestion.py |
+| `Port 8000 already in use` | `lsof -i :8000` then `kill -9 <PID>` |
+| `Streamlit connection refused` | Check streamlit running: `ps aux | grep streamlit` |
+
+### Debugging Order
+Check API health: curl http://localhost:8000/health
+Check models loaded — health response shows model status
+Check logs: docker compose logs api --tail=50
+Run tests: pytest tests/ -v — 10/10 should pass
+Check PYTHONPATH: run all scripts with PYTHONPATH=. prefix
+
+
+---
+
+## AWS EC2 Deployment
+
+```bash
+# SSH to server
+ssh -i ~/Documents/GitHub/mlops-key.pem ubuntu@18.184.3.203
+
+# Start air quality API
+cd ~/air-quality-anomaly-detection
+docker compose up -d
+
+# Verify API running
+curl -s http://localhost:8000/health
+
+# Check Streamlit dashboard
+sudo systemctl status airquality-dashboard
+
+# Get current Cloudflare tunnel URL
+journalctl -u cloudflared-airquality --no-pager | grep trycloudflare.com | tail -1
+
+# Restart dashboard if needed
+sudo systemctl restart airquality-dashboard
+
+# Check logs
+docker compose logs --tail=20
+```
+
+---
+
+## Deep Dives — Critical Concepts
+
+### Why ARIMA Beat LSTM on This Dataset
+ARIMA won: RMSE 9.93
+LSTM lost:  RMSE 19.46
+Reason: dataset size — 1,620 hourly readings after resampling
+LSTM is a deep learning model:
+Needs thousands of rows to generalise well
+With 1,620 rows → memorises training data → fails on test set
+Overfitting — learns noise not signal
+ARIMA is a statistical model:
+Works well on small, stationary time series
+ADF test confirmed stationarity (p=0.0000)
+Optimal regime for ARIMA — exactly this situation
+Rule:
+Small stationary time series (<5,000 rows)  → ARIMA
+Large non-stationary time series (50,000+)  → LSTM
+Medium datasets                              → test both, compare RMSE
+
+### ADF Test — Stationarity in Time Series
+Stationarity = statistical properties do not change over time
+Mean stays constant
+Variance stays constant
+No trend, no seasonality
+Why ARIMA needs stationarity:
+ARIMA models the differences between consecutive values
+If series has a trend (going up over time), differences are not stationary
+d parameter in ARIMA(p,d,q) = number of times to difference
+ADF Test (Augmented Dickey-Fuller):
+H0 (null): series has a unit root → NOT stationary
+H1 (alternative): series is stationary
+p-value < 0.05 → reject H0 → series IS stationary → d=0
+p-value > 0.05 → fail to reject H0 → NOT stationary → d=1 or d=2
+This pipeline: p=0.0000 → strongly stationary → d=0 → ARIMA(p,0,q)
+
+### Isolation Forest — How Anomaly Detection Works
+Isolation Forest detects anomalies by isolation — not by density.
+Key insight: anomalies are few and different
+Normal points: many similar points → hard to isolate → many tree splits needed
+Anomalies: few, far from others → easy to isolate → few tree splits needed
+Algorithm:
+
+Randomly select a feature
+Randomly select a split value between min and max
+Repeat until point is isolated
+Anomaly score = average path length across all trees
+Short path = anomalous (isolated quickly)
+Long path = normal (needs many splits)
+
+contamination parameter:
+Expected proportion of anomalies in the dataset
+0.01 = expect 1% of readings to be anomalous
+Too high → too many false positives (normal readings flagged)
+Too low → misses real anomalies
+This pipeline:
+contamination=0.01 → flags ~16 readings out of 1,620 as anomalous
+469 µg/m³ spike → correctly flagged → 93x WHO annual safe limit
+
+### Data Drift vs Concept Drift in Environmental ML
+DATA DRIFT — what Evidently AI detected in Week 8:
+PM2.5 mean shifted from 19.02 → 12.50 µg/m³
+Seasonal change — dry season to wet season
+Feature distribution changed — relationship unchanged
+Fix: retrain on current season data
+CONCEPT DRIFT — harder to detect:
+Example: 4am used to predict high PM2.5 (night burning)
+New Nairobi county regulations ban night burning
+4am no longer predicts high PM2.5
+ARIMA model is wrong even with correct distributions
+Detection: rising RMSE trend in MLflow over time
+Fix: feature engineering + retrain
+Environmental ML specific drift causes:
+Seasonal changes (dry → wet season)
+Sensor recalibration — baseline shifts
+New pollution sources (construction, new roads)
+Policy changes (emission regulations)
+All require monitoring + periodic retraining
