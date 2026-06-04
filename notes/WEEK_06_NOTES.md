@@ -259,80 +259,121 @@ docker compose logs --tail=20
 
 ---
 
+
 ## Deep Dives — Critical Concepts
 
 ### Why ARIMA Beat LSTM on This Dataset
-ARIMA won: RMSE 9.93
-LSTM lost:  RMSE 19.46
-Reason: dataset size — 1,620 hourly readings after resampling
+
+ARIMA won: RMSE 9.93 · LSTM lost: RMSE 19.46
+
+Reason: dataset size — only 1,620 hourly readings after resampling.
+
 LSTM is a deep learning model:
-Needs thousands of rows to generalise well
-With 1,620 rows → memorises training data → fails on test set
-Overfitting — learns noise not signal
+- Needs thousands of rows to generalise well
+- With 1,620 rows it memorises training data and fails on test set
+- Overfitting — learns noise not signal
+
 ARIMA is a statistical model:
-Works well on small, stationary time series
-ADF test confirmed stationarity (p=0.0000)
-Optimal regime for ARIMA — exactly this situation
+- Works well on small, stationary time series
+- ADF test confirmed stationarity (p=0.0000)
+- Optimal regime for ARIMA — exactly this situation
+
 Rule:
-Small stationary time series (<5,000 rows)  → ARIMA
-Large non-stationary time series (50,000+)  → LSTM
-Medium datasets                              → test both, compare RMSE
+- Small stationary time series under 5,000 rows → ARIMA
+- Large non-stationary time series over 50,000 rows → LSTM
+- Medium datasets → test both and compare RMSE
+
+---
 
 ### ADF Test — Stationarity in Time Series
-Stationarity = statistical properties do not change over time
-Mean stays constant
-Variance stays constant
-No trend, no seasonality
+
+Stationarity means statistical properties do not change over time:
+- Mean stays constant
+- Variance stays constant
+- No trend, no seasonality
+
 Why ARIMA needs stationarity:
-ARIMA models the differences between consecutive values
-If series has a trend (going up over time), differences are not stationary
-d parameter in ARIMA(p,d,q) = number of times to difference
+ARIMA models the differences between consecutive values.
+If the series has a trend the differences are not stationary.
+The d parameter in ARIMA(p,d,q) is the number of times to difference.
+
 ADF Test (Augmented Dickey-Fuller):
-H0 (null): series has a unit root → NOT stationary
-H1 (alternative): series is stationary
-p-value < 0.05 → reject H0 → series IS stationary → d=0
-p-value > 0.05 → fail to reject H0 → NOT stationary → d=1 or d=2
+- H0 null: series has a unit root → NOT stationary
+- H1 alternative: series IS stationary
+- p-value < 0.05 → reject H0 → series IS stationary → d=0
+- p-value > 0.05 → NOT stationary → d=1 or d=2
+
 This pipeline: p=0.0000 → strongly stationary → d=0 → ARIMA(p,0,q)
 
+```python
+from statsmodels.tsa.stattools import adfuller
+
+result = adfuller(df["pm25"])
+print(f"ADF Statistic: {result[0]:.4f}")
+print(f"p-value: {result[1]:.4f}")
+# p=0.0000 → stationary → d=0
+```
+
+---
+
 ### Isolation Forest — How Anomaly Detection Works
-Isolation Forest detects anomalies by isolation — not by density.
-Key insight: anomalies are few and different
-Normal points: many similar points → hard to isolate → many tree splits needed
-Anomalies: few, far from others → easy to isolate → few tree splits needed
+
+Isolation Forest detects anomalies by isolation, not by density.
+
+Key insight: anomalies are few and different from normal points.
+- Normal points: many similar neighbours → hard to isolate → many tree splits needed
+- Anomalies: few, far from others → easy to isolate → few tree splits needed
+
 Algorithm:
+1. Randomly select a feature
+2. Randomly select a split value between min and max
+3. Repeat until point is isolated
+4. Anomaly score = average path length across all trees
+   - Short path = anomalous (isolated quickly)
+   - Long path = normal (needs many splits)
 
-Randomly select a feature
-Randomly select a split value between min and max
-Repeat until point is isolated
-Anomaly score = average path length across all trees
-Short path = anomalous (isolated quickly)
-Long path = normal (needs many splits)
+The contamination parameter sets the expected proportion of anomalies:
+- 0.01 = expect 1% of readings to be anomalous
+- Too high → too many false positives
+- Too low → misses real anomalies
 
-contamination parameter:
-Expected proportion of anomalies in the dataset
-0.01 = expect 1% of readings to be anomalous
-Too high → too many false positives (normal readings flagged)
-Too low → misses real anomalies
-This pipeline:
-contamination=0.01 → flags ~16 readings out of 1,620 as anomalous
-469 µg/m³ spike → correctly flagged → 93x WHO annual safe limit
+This pipeline: contamination=0.01 → flags ~16 readings out of 1,620
+469 µg/m³ spike on 2024-02-18 at 4am → correctly flagged → 93x WHO annual safe limit
+
+```python
+from sklearn.ensemble import IsolationForest
+
+iso_forest = IsolationForest(contamination=0.01, random_state=42)
+predictions = iso_forest.fit_predict(df[["pm25"]])
+# -1 = anomaly, 1 = normal
+anomalies = df[predictions == -1]
+```
+
+---
 
 ### Data Drift vs Concept Drift in Environmental ML
+
 DATA DRIFT — what Evidently AI detected in Week 8:
-PM2.5 mean shifted from 19.02 → 12.50 µg/m³
-Seasonal change — dry season to wet season
-Feature distribution changed — relationship unchanged
-Fix: retrain on current season data
+- PM2.5 mean shifted from 19.02 → 12.50 µg/m³
+- Seasonal change — dry season to wet season
+- Feature distribution changed but relationship unchanged
+- Fix: retrain on data from current season
+
 CONCEPT DRIFT — harder to detect:
-Example: 4am used to predict high PM2.5 (night burning)
-New Nairobi county regulations ban night burning
-4am no longer predicts high PM2.5
-ARIMA model is wrong even with correct distributions
-Detection: rising RMSE trend in MLflow over time
-Fix: feature engineering + retrain
+- Example: 4am used to predict high PM2.5 due to night burning
+- New Nairobi county regulations ban night burning
+- 4am no longer predicts high PM2.5
+- Model is wrong even with correct input distributions
+- Detection: rising RMSE trend in MLflow over time despite stable data
+- Fix: feature engineering + full retrain
+
 Environmental ML specific drift causes:
-Seasonal changes (dry → wet season)
-Sensor recalibration — baseline shifts
-New pollution sources (construction, new roads)
-Policy changes (emission regulations)
-All require monitoring + periodic retraining
+- Seasonal changes (dry → wet season)
+- Sensor recalibration — baseline shifts
+- New pollution sources (construction, new roads)
+- Policy changes (emission regulations)
+
+---
+
+*Week 6 · 15-Week MLOps Programme · Built in Nairobi, Kenya 🇰🇪*
+*Live API: http://18.184.3.203:8000/docs · Dashboard: https://discounted-patrol-bosnia-insights.trycloudflare.com*
