@@ -17,7 +17,7 @@ Built by [Martin James Ng'ang'a](https://github.com/M20Jay) — MLOps Engineer |
 | Service | URL | Description |
 |---|---|---|
 | 🌍 **Interactive Dashboard** | [https://discounted-patrol-bosnia-insights.trycloudflare.com](https://discounted-patrol-bosnia-insights.trycloudflare.com) | Streamlit dashboard — live on AWS EC2 · dark theme · forecast · anomaly detection ⚠️ URL changes on restart — permanent domain coming Week 10 |
-| ⚡ **Live API** | [18.184.3.203:8000/docs](http://18.184.3.203:8000/docs) | FastAPI on AWS EC2 Frankfurt — live 24/7, no cold starts |
+| ⚡ **Live API** | [52.57.213.229:8000/docs](http://52.57.213.229:8000/docs) | FastAPI on AWS EC2 Frankfurt — live 24/7, no cold starts |
 
 
 
